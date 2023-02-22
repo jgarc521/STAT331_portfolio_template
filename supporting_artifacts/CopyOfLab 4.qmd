@@ -1,0 +1,170 @@
+---
+title: "Lab 4"
+author: "Jose Garcia"
+format:
+  html:
+    theme: darkly
+    self-contained: true
+    code-tools: true
+    code-fold: true
+    echo: true
+    warning: false
+execute:
+    eval: true
+    error: true
+    message: false
+    warning: false
+---
+
+# Lab 4
+
+```{r setup}
+
+library(tidyverse)
+library(ggridges)
+
+avocado <- read_csv(here::here("Week 4", "Lab 4", "avocado.csv"))
+```
+
+## Problem 1
+
+<div>
+
+Briefly describe the dataset. What information does it contain?
+
+-   This dataset contains information about the weekly retail scan data on actual scales of Hass avocados. Each row represents a different weeks observation at a certain region.
+
+</div>
+
+## Problem 2
+
+```{r Problem 2}
+
+#Renaming PLU's
+avocado_clean <- avocado |>
+  rename('Small_Avocado' = '4046', 'Large_Avocado' = '4225', "XL_Avocado" = '4770', 'Total_Volume' = 'Total Volume') 
+
+#Categorizing Regions
+metro_regions <- tibble(region = c("LasVegas", "Seattle", "SanFrancisco", "SanDiego", "Sacramento", "Portland", "Tampa", "Pittsburgh", "Philadelphia", "Orlando", "Louisville", "LosAngeles", "Jacksonville", "Detroit", "Denver", "DallasFtWorth", "Chicago", "Boston", "Atlanta", "MiamiFtLauderdale", "Houston"))
+
+avocado_metro <- avocado_clean |>
+  semi_join(metro_regions, by = "region")
+
+avocado_major <- avocado_clean |>
+  anti_join(metro_regions, by = "region") 
+```
+
+## Problem 3
+
+```{r}
+
+avocado_major |>
+  filter(type == "organic" & year == 2017) |>
+  group_by(region) |>
+  summarise((tot_small = sum(Small_Avocado))) 
+  
+```
+
+<div>
+
+Which major region sold the most organic, small Hass avocados in 2017?
+
+-   West
+
+</div>
+
+## Problem 4
+
+```{r Problem 4}
+
+avocado_clean <- avocado_clean |>
+  separate(Date, c("Year", "Month", "Day"))
+
+avocado_clean |>
+  group_by(Month) |>
+  summarise(tot_vol = sum(Total_Volume))
+```
+
+<div>
+
+Use the `separate()` function to split the `Date` variable into year, month, and day. In which month is the highest volume of avocado sales?
+
+-   February
+
+</div>
+
+## Problem 5
+
+```{r Problem 5}
+
+options(scipen = 999) #from Google, removes scientific notation
+
+metro_avg <- avocado_metro |>
+  group_by(region) |>
+  summarise(avg = mean(Total_Volume, na.rm = TRUE)) |> 
+  select(region, avg) |>
+  top_n(5)
+
+avocado_metro |>
+  semi_join(metro_avg) |> #returns rows from x with a match in y
+  ggplot(aes(x = region, y = Total_Volume, fill = region)) +
+  geom_boxplot(position = "dodge") + 
+  labs(x = "Region", y = "", title = "Total Volume of Avocados for Top 5 Metro Regions", fill = "Region")
+
+  
+```
+
+<div>
+
+Which metro area regions sold the most total avocados? Plot density ridges of the total volume for **only the five regions** with the highest averages for the `Total Volume` variable.
+
+-   Los Angeles
+
+</div>
+
+## Problem 6
+
+```{r Problem 6}
+
+avocado_cali <- avocado_clean |>
+  filter(region %in% 
+           c("LosAngeles", "SanDiego", "Sacramento", "SanFrancisco")
+         )
+
+prices <- avocado_cali |>
+  select(region, type, AveragePrice) |>
+  group_by(region, type) |>
+  summarise(avg = mean(AveragePrice)) |>
+  pivot_wider(names_from = region, values_from = avg) |>
+  summarise(diff = across(.cols = 'LosAngeles': 'SanFrancisco', .fns = diff))
+```
+
+<div>
+
+In which regions is the price of organic versus conventional avocados most different? Support your answer with a few summary statistics and a visualization.
+
+-   It appears that in San Francisco, the price of organic versus conventional avocados is the most different.
+
+</div>
+
+## Problem 7
+
+```{r Problem 7}
+
+conventional <- avocado_cali |>
+  group_by(region, type) |>
+  mutate(Small = sum(Small_Avocado)/sum(Small_Avocado, Large_Avocado, XL_Avocado),
+         Large = sum(Large_Avocado)/sum(Small_Avocado, Large_Avocado, XL_Avocado),
+         'Extra Large' = sum(XL_Avocado)/sum(Small_Avocado, Large_Avocado, XL_Avocado)) |>
+  pivot_longer(cols = Small: 'Extra Large', names_to = "Avocado_Size", values_to = "Proportions")
+
+conventional |>
+  ggplot(aes(x = region, y = Proportions, fill = Avocado_Size)) + 
+  geom_col(position = "fill") + 
+  facet_wrap(~ type) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  labs(x = "Region", y = "Proportion of Mean Avocados Sold")
+
+
+
+```
