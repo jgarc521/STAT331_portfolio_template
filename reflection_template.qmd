@@ -845,7 +845,3 @@ Normally, as I work through my assignments, I have to do external research to co
 ## Peer Support & Collaboration
 
 <!-- Include an image of feedback you gave that you are proud of (either in a peer review or in Discord) -->
-
-![](images/Screen%20Shot%202023-02-21%20at%205.34.09%20PM.png){width="178"}
-
-![]()
