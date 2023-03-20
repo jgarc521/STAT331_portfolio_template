@@ -3,3 +3,9 @@ title: "My Growth as a Data Scientist"
 format: html
 editor: visual
 ---
+
+<div>
+
+Over the past quarter, I have grown significantly as a data scientist, both in my understanding of data science concepts and in my ability to apply them to real-world applications. Prior to this course, my understanding of coding in R was very surface level. I understand how to use R purely for statistical purposes, but I quickly learned that R can do much more than that and now feel more comfortable learning new concepts and applying them to various situations. More specifically, I saw growth in the tidiness, efficiency, and creativity of my code. One document which clearly shows my growth is Lab 7. Comparing this lab to my earlier labs, it is extremely apparent that my code is a lot more tidy and readable. Taking a look at my functions, there are no lines of code that are repeated or unnecessary, making them efficient (more so than before). Finally, there are a couple of instances where I get creative. For instance, using the range() function to get the min/max instead of using the min/max functions directly and avoiding repeating lines of code.
+
+</div>

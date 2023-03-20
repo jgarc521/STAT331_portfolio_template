@@ -3,3 +3,9 @@ title: "The Power of Efficiency"
 format: html
 editor: visual
 ---
+
+<div>
+
+Efficiency can be described as the ability to perform a task quickly, accurately, and with minimal waste of resources. In the context of statistical computing / data science, efficiency allows users to achieve more in less time and with fewer resources. It enables them to solve more complex problems and reduces the risk of errors leading to more reliable results. Efficiency is important for all the reasons above, without it, they would not be feasible. I have encountered efficiency in various aspects of data science such as having tools that allow us to reduce our code so that no lines are repeated, slightly faster processing times, and better readability of code. The most memorable "a-ha" moment that I can recall was when we learned about the across() function. Prior to learning across(), functions would have had to be repeated several times across the desired inputs. However, across() allowed us to condense and decrease the processing time of our code. Shortly after, we would learn about the map() functions which condensed our code even more and allowed us to do much more. This progression can be seen in Lab 7.
+
+</div>

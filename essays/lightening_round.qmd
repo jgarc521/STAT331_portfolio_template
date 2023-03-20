@@ -3,3 +3,17 @@ title: "Lightening Round Essays"
 format: html
 editor: visual
 ---
+
+<div>
+
+-   If Jia doesn't earn an A, then nobody should, because he is very helpful and always willing to help out. Also, he keeps the energy up in class.
+
+-   The most difficult part of the class was keeping up with all the work assigned. As a full-time student with a job, I often found myself behind with the assignments because I lacked the time to work on them and be engaged.
+
+-   The easiest part of the class was understanding the lectures. They were usually short, concise, and extremely helpful.
+
+-   I was very surprised to learn about the unique grading system because I had never experienced anything like it and STEM classes are usually very stressful and unforgiving when it comes to the grading systems used.
+
+-   Don't be afraid to ask for help, and remember that you are not the only one who may need help.
+
+</div>
