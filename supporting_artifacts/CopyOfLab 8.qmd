@@ -1,0 +1,133 @@
+---
+title: "Lab 8"
+author: "Jose Garcia"
+format:
+  html:
+    theme: darkly  
+    self-contained: true
+    code-tools: true
+    code-fold: true
+    echo: true
+    warning: false
+execute:
+    eval: true
+    error: true
+    message: false
+    warning: false
+---
+
+## Set Up
+
+```{r}
+
+library(dplyr)
+library(glue)
+library(stringr)
+library(purrr)
+library(english)
+
+xmas <- read.csv("https://www.dropbox.com/s/e584pryn8evm1gz/xmas.csv?dl=1")
+```
+
+```{r}
+
+#Pluralizing Gifts
+pluralize_gift <- function(gift){
+
+gift <- case_when(
+  str_detect(gift, "oo") ~ str_replace(gift, "oo", "ee"),
+  str_detect(gift, "y$") ~ str_replace(gift, "y$", "ies"),
+  .default = str_c(gift, "s")
+)
+
+return(gift)
+
+}
+
+#Making a Phrase
+make_phrase <- function(day, num_word, item, verb, adjective, location) {
+
+  verb <- str_replace_na(verb, "")
+  adjective <- str_replace_na(adjective, "")
+  location <- str_replace_na(location, "")
+  
+  if(day > 1) {
+    item <- pluralize_gift(item)
+  }
+  
+  if(day == 1) {
+    x <- ifelse(str_to_lower(
+      substr(item, 1, 1)) %in% 
+        c("a", "e", "i", "o", "u"), "an", "a")
+    item <- str_c(x, " ", item)
+
+  }
+  
+  day <- english(day)
+
+  phrase <- ifelse(
+    day == 1,
+    glue("{adjective} {item} {location} {verb}"),
+    glue("{day} {adjective} {item} {location} {verb}")
+    )
+    return(phrase)
+    str_squish(phrase)
+}
+
+#Making a Full Phrase
+xmas2 <- xmas %>%
+  mutate(Full.Phrase = pmap_chr(.l = list(
+    Day, Day.in.Words, Gift.Item, Verb, Adjective, Location), 
+                                .f = make_phrase)
+         )
+```
+
+## Iteration
+
+```{r}
+# Produces the string for one day of the song.
+# Arguments -- dataset: A data frame containing information about gifts
+# Arguments -- line: The number of the line for the day you want to sing about
+# Arguments -- phrase_col: The variable name for the column in the dataset that contains the song phrases
+# Return -- A string singing the line of the song with all gifts for the given day.
+
+sing_day <- function(dataset, line, phrase_col){
+  
+  # Step 1: Setup the intro line
+  # Hint: You need to convert a number (e.g., 1) to a word (e.g., first)
+  num_word <- ordinal(line)
+  
+  intro <- glue::glue("On the {num_word} day of Christmas, my true love gave to me: ")
+  
+  # Step 2: Sing the gift phrases
+
+    phrases <- dataset |>
+      pull( {{phrase_col}} ) 
+    phrases <- phrases[1: line]
+
+    
+  ## put it together
+    
+    phrases <- str_c(rev({{phrases}}), collapse = ",")
+    phrases <- glue::glue("{intro} {phrases}.") |>
+    str_squish()
+    
+  return(phrases)
+}
+
+```
+
+## A Small Test
+
+```{r}
+xmas2 |>
+sing_day(line = 2, phrase_col = Full.Phrase)
+```
+
+## Use Your Functions!
+
+```{r}
+
+map_chr(.x = 1: 12,
+        .f = ~ sing_day(xmas2, .x, Full.Phrase))
+```

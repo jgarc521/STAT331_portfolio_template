@@ -1,0 +1,118 @@
+---
+title: "Challenge 9"
+author: "Jose Garcia"
+format:
+  html:
+    self-contained: true
+    code-tools: true
+    code-fold: true
+    echo: true
+    warning: false
+execute:
+    eval: true
+    error: true
+    message: false
+    warning: false
+---
+
+# Set Up
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(DT)
+
+namesA <- read.csv(here::here("Week 9", "Lab 9", "StateNames_A.csv"))
+```
+
+## Interactive Tables
+
+```{r}
+datatable(head(namesA, 10000), options = list(pageLength = 20))
+```
+
+## Formatting Basic Tables
+
+```{r}
+namesA <- namesA |>
+  rename(Sex = Gender)
+
+#Making our table
+tableA <- namesA |>
+  group_by(Name, State, Sex) |>
+    filter(Name == 'Allison') |>
+  summarize(Count = sum(Count, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = Sex, values_from = Count, values_fill = 0)
+
+tableA |>
+  knitr::kable(
+    format = "html",
+    align = 
+      c('l','r','r'),
+    caption = "Number of Babies Named Allison by State and Sex") |>
+  kableExtra::kable_classic(html_font = "Arial")
+  
+```
+
+```{r}
+allan <- namesA |>
+  filter(Sex == "M", Year == 2000, Name %in% c("Allan", "Alan", "Allen"),
+         State %in% c("PA", "CA")) |>
+  group_by(State, Name) |>
+  summarise(Total_Count = sum(Count), .groups = "drop") |>
+  pivot_wider(names_from = Name, values_from = Total_Count, values_fill = 0)
+
+allan |>
+  knitr::kable(
+    format = "html",
+    col.names = c("State", "Allan", "Allen", "Alan"),
+    caption = "Total Number of Babies with Each Spelling of Allan in 2000") |>
+  kableExtra::kable_classic(html_font = "Arial")
+```
+
+```{r}
+
+allan2 <- namesA |>
+  filter(Sex == "M", Year == 2000, Name %in% c("Allan", "Alan", "Allen"),
+         State %in% c("PA", "CA")) |>
+  group_by(State, Name) |>
+  summarise(Total_Count = sum(Count), .groups = "drop") |>
+  pivot_wider(names_from = Name, values_from = Total_Count, values_fill = 0) |>
+  mutate(Total = Allan + Allen + Alan,
+         Allan = round(100 * Allan / Total, 2),
+         Allen = round(100* Allen / Total, 2),
+         Alan = round(100 * Alan / Total, 2))
+
+allan2 |>
+  knitr::kable(
+    format = "html",
+    col.names = c("State", 'Alan Pct', "Allan Pct", 'Alan Pct', "Total"),
+    caption = "Total Percent of Babies with each Spelling of Allan in 2000, by State")|>
+      kableExtra::kable_classic(html_font = "Arial")
+```
+
+## Formatting Nicer Tables
+
+```{r}
+
+allan2 <- namesA |>
+  filter(Sex == "M", Year == 2000, Name %in% c("Allan", "Alan", "Allen"),
+         State %in% c("PA", "CA")) |>
+  group_by(State, Name) |>
+  summarise(Total_Count = sum(Count), .groups = "drop") |>
+  pivot_wider(names_from = Name, values_from = Total_Count, values_fill = 0) |>
+  mutate(Total = Allan + Allen + Alan,
+         Allan = round(100 * Allan / Total, 2),
+         Allen = round(100* Allen / Total, 2),
+         Alan = round(100 * Alan / Total, 2))
+
+allan2 |>
+  knitr::kable(
+    format = "html",
+    col.names = c("State", 'Alan Pct', "Allan Pct", 'Alan Pct', "Total"),
+    caption = "Total Percent of Babies with each Spelling of Allan in 2000, by State")|>
+      kable_classic(html_font = "Arial") |>
+  kable_styling(full_width = TRUE, bootstrap_options = "striped", font_size = 12) |>
+  footnote(general = "Source: StateNames_A dataset") |>
+  row_spec(0, bold = TRUE, color = "white", background = "#406b99")
+```

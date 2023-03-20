@@ -1,0 +1,168 @@
+---
+title: "Lab 9"
+author: "Jose Garcia"
+format:
+  html:
+    self-contained: true
+    code-tools: true
+    code-fold: true
+    echo: true
+    warning: false
+execute:
+    eval: true
+    error: true
+    message: false
+    warning: false
+---
+
+# Set Up
+
+```{r}
+library(tidyverse)
+
+namesA <- read.csv(here::here("Week 9", "Lab 9", "StateNames_A.csv"))
+```
+
+# Summarizing & Visualizing the Number of Allisons
+
+## Make a summary table of the number of babies named \"Allison\" for each state and the sex of the baby.
+
+```{r}
+
+#Renaming the 'Gender' column to a more appropriate name
+namesA <- namesA |>
+  rename(Sex = Gender)
+
+#Making our table
+tableA <- namesA |>
+  group_by(Name, State, Sex) |>
+    filter(Name == 'Allison') |>
+  summarize(Count = sum(Count, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = Sex, values_from = Count, values_fill = 0)
+
+tableA |>
+  knitr::kable(
+    format = "html",
+    align = 
+      c('l','r','r'),
+    caption = "Number of Babies Named Allison by State and Sex") |>
+  kableExtra::kable_classic(html_font = "Arial")
+  
+  
+```
+
+##  So, create a new dataset named `allison_f` which contains **only** the babies assigned `F`emale at birth.
+
+```{r}
+allison_f <- namesA |>
+  filter(Name == "Allison" & Sex == "F")
+```
+
+## Make a visualization showing how the popularity of the name \"Allison\" has changed over the years.
+
+```{r}
+allison_summary <- allison_f |>
+  group_by(Year) |>
+  summarise(Total_Count = sum(Count))
+
+ggplot(allison_summary, aes(x = Year, y = Total_Count)) +
+  geom_line() + 
+  labs(x = "Year", y = "", title = "Popularity of the Name Allison Over Time")
+```
+
+Modeling the Number of Allisons
+
+## Fit a linear model with the year as the explanatory variable, and the number of Allisons as the response.
+
+```{r}
+allison_lm <- lm(Total_Count ~ Year, data = allison_summary)
+summary(allison_lm)
+```
+
+## Write out the estimated regression equation
+
+<div>
+
+predicted number of Allisons = -101.5(year) + 209689.8
+
+</div>
+
+## Plot the *residuals* of the model, that is, the actual values minus the predicted values.
+
+```{r}
+allison_lm |>
+  broom::augment() |>
+  ggplot(aes(y = .resid, x = .fitted)) + 
+  geom_point() 
+```
+
+<div>
+
+No strong or discernible pattern is seen in the plot.
+
+</div>
+
+## What do you conclude from this model? Is my name not cool anymore?
+
+<div>
+
+The p-value for the regression is 0.00022228 which indicates a statistically significant relationship between the year and number of Allisons born each year. The adjusted R-squared value for the model is 0.5578 which tells us that the model explains a moderate amount of variation in the response variable. Furthermore, the coefficient for 'Year' is -101.52 which means that for each additional year, the predicted number of Allisons born decreases by 101.52. Therefore, we can conclude that the popularity of the name Allison has been decreasing over time.
+
+</div>
+
+# Spelling by State
+
+## Narrow the A name dataset down to only male-assigned babies named \"Allan\", \"Alan\", or \"Allen\". Make a plot comparing the popularity of these names over time.
+
+```{r}
+alxxn <- namesA |>
+  filter(Sex == "M", Name %in% c("Allan", "Alan", "Allen")) |>
+  group_by(Year, Name) |>
+  summarise(Total_Count = sum(Count))
+
+ggplot(alxxn, aes(x = Year, y = Total_Count, color = Name)) +
+  geom_line() +
+  labs(x = "Year", y = "", title = "Popularity of Allan/Alan/Allen Over Time")
+```
+
+## Compute the total number of babies born with each spelling of \"Allan\" in the year 2000, in Pennsylvania and in California.
+
+```{r}
+allan <- namesA |>
+  filter(Sex == "M", Year == 2000, Name %in% c("Allan", "Alan", "Allen"),
+         State %in% c("PA", "CA")) |>
+  group_by(State, Name) |>
+  summarise(Total_Count = sum(Count), .groups = "drop") |>
+  pivot_wider(names_from = Name, values_from = Total_Count, values_fill = 0)
+
+allan |>
+  knitr::kable(
+    format = "html",
+    col.names = c("State", "Allan", "Allen", "Alan"),
+    caption = "Total Number of Babies with Each Spelling of Allan in 2000") |>
+  kableExtra::kable_classic(html_font = "Arial")
+```
+
+## Convert your total counts to overall percents. That is, what was the percent breakdown between the three spellings in CA? What about in PA?
+
+```{r}
+
+allan2 <- namesA |>
+  filter(Sex == "M", Year == 2000, Name %in% c("Allan", "Alan", "Allen"),
+         State %in% c("PA", "CA")) |>
+  group_by(State, Name) |>
+  summarise(Total_Count = sum(Count), .groups = "drop") |>
+  pivot_wider(names_from = Name, values_from = Total_Count, values_fill = 0) |>
+  mutate(Total = Allan + Allen + Alan,
+         Allan = round(100 * Allan / Total, 2),
+         Allen = round(100* Allen / Total, 2),
+         Alan = round(100 * Alan / Total, 2))
+
+allan2 |>
+  knitr::kable(
+    format = "html",
+    col.names = c("State", 'Alan Pct', "Allan Pct", 'Alan Pct', "Total"),
+    caption = "Total Percent of Babies with each Spelling of Allan in 2000, by State")|>
+      kableExtra::kable_classic(html_font = "Arial")
+
+```
